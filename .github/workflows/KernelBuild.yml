@@ -66,7 +66,7 @@ jobs:
       - name: Sync GKI source code
         run: |
          mkdir build_kernel && cd build_kernel
-         repo init -u https://android.googlesource.com/kernel/manifest -b common-${{ github.event.inputs.Android_Version }}-${{ github.event.inputs.Kernel_Version }}-${{ github.event.inputs.Sub_Level }} --depth=1
+         repo init -u https://android.googlesource.com/kernel/manifest -b common-android${{ github.event.inputs.Android_Version }}-${{ github.event.inputs.Kernel_Version }}-${{ github.event.inputs.Sub_Level }} --depth=1
          repo sync
          
       - name: Setup SukiSU-Ultra
@@ -82,14 +82,15 @@ jobs:
       - name: Setup SUSFS
         run: |
            cd build_kernel
-           git clone https://gitlab.com/simonpunk/susfs4ksu.git -b gki-${{ github.event.inputs.Android_Version }}-${{ github.event.inputs.Kernel_Version }}     
-           cp susfs4ksu/kernel_patches/50_add_susfs_in_gki-${{ github.event.inputs.Android_Version }}-${{ github.event.inputs.Kernel_Version }}.patch ./common/
+           git clone https://gitlab.com/simonpunk/susfs4ksu.git -b gki-android${{ github.event.inputs.Android_Version }}-${{ github.event.inputs.Kernel_Version }}     
+           git clone https://github.com/SukiSU-Ultra/SukiSU_patch.git
+           cp susfs4ksu/kernel_patches/50_add_susfs_in_gki-android${{ github.event.inputs.Android_Version }}-${{ github.event.inputs.Kernel_Version }}.patch ./common/
            cp susfs4ksu/kernel_patches/fs/* ./common/fs/
            cp susfs4ksu/kernel_patches/include/linux/* ./common/include/linux/
            cd common
-           sed -i 's/-32,12 +32,38/-32,11 +32,37/g' 50_add_susfs_in_gki-${{ github.event.inputs.Android_Version }}-${{ github.event.inputs.Kernel_Version }}.patch
-           sed -i '/#include <trace\/hooks\/fs.h>/d' 50_add_susfs_in_gki-${{ github.event.inputs.Android_Version }}-${{ github.event.inputs.Kernel_Version }}.patch
-           patch -p1 < 50_add_susfs_in_gki-${{ github.event.inputs.Android_Version }}-${{ github.event.inputs.Kernel_Version }}.patch || true
+           sed -i 's/-32,12 +32,38/-32,11 +32,37/g' 50_add_susfs_in_gki-android${{ github.event.inputs.Android_Version }}-${{ github.event.inputs.Kernel_Version }}.patch
+           sed -i '/#include <trace\/hooks\/fs.h>/d' 50_add_susfs_in_gki-android${{ github.event.inputs.Android_Version }}-${{ github.event.inputs.Kernel_Version }}.patch
+           patch -p1 < 50_add_susfs_in_gki-android${{ github.event.inputs.Android_Version }}-${{ github.event.inputs.Kernel_Version }}.patch || true
            cp ../SukiSU_patch/hooks/syscall_hooks.patch ./
            patch -p1 -F 3 < syscall_hooks.patch
            echo "Complete"
