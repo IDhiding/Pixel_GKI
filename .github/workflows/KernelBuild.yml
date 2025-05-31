@@ -14,10 +14,10 @@ on:
        description: "Sub Level"
        required: true
        default: '2025-05'
-      Kernel_Suffix:
-        description: "Kernel Suffix"
-        required: true
-        default: 'g9a32439e14e9-ab13050921'
+      #Kernel_Suffix:
+        #description: "Kernel Suffix"
+        #required: true
+        #default: 'g9a32439e14e9-ab13050921'
       Kernel_Time:
        description: "Build Time"
        required: true
@@ -129,12 +129,13 @@ jobs:
           cd common
           git add -A && git commit -a -m "BUILD Kernel"
           
-      - name: Add kernel suffix
-        run: |
-         cd build_kernel
-         sed -i '$s|echo "\$res"|echo "\$res-${{ github.event.inputs.Kernel_Suffix }}"|' ./common/scripts/setlocalversion
-         sed -i "/stable_scmversion_cmd/s/-maybe-dirty//g" ./build/kernel/kleaf/impl/stamp.bzl
-         sed -i '/^CONFIG_LOCALVERSION=/ s/="\([^"]*\)"/="${{ github.event.inputs.Kernel_Suffix }}"/' ./common/arch/arm64/configs/gki_defconfig
+      #- name: Add kernel suffix
+        #run: |
+         #cd build_kernel
+         #sed -i '$s|echo "\$res"|echo "\$res-${{ github.event.inputs.Kernel_Suffix }}"|' ./common/scripts/setlocalversion
+         #sed -i "/stable_scmversion_cmd/s/-maybe-dirty//g" ./build/kernel/kleaf/impl/stamp.bzl
+         #sed -i '/^CONFIG_LOCALVERSION=/ s/="\([^"]*\)"/="${{ github.event.inputs.Kernel_Suffix }}"/' ./common/arch/arm64/configs/gki_defconfig
+      
       - name: Set kernel build time
         run: |
           export SOURCE_DATE_EPOCH=$(date -d "${{ github.event.inputs.Kernel_Time }}" +%s)
