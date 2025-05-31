@@ -133,6 +133,8 @@ jobs:
         run: |
          cd build_kernel
          sed -i '$s|echo "\$res"|echo "\$res-${{ github.event.inputs.Kernel_Suffix }}"|' ./common/scripts/setlocalversion
+         sed -i "/stable_scmversion_cmd/s/-maybe-dirty//g" ./build/kernel/kleaf/impl/stamp.bzl
+         sed -i '/^CONFIG_LOCALVERSION=/ s/="\([^"]*\)"/="{{ github.event.inputs.Kernel_Suffix }}"/' ./common/arch/arm64/configs/gki_defconfig
          
       - name: Set kernel build time
         run: |
