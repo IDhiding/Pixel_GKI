@@ -135,6 +135,7 @@ fi
 
 # Add kernel Suffix
 cd $HOME/Pixel_GKI/build_kernel || exit
+perl -pi -e "s{UTS_VERSION=\"\\\$\(echo \\\$UTS_VERSION \\\$CONFIG_FLAGS \\\$TIMESTAMP \\| cut -b -\\\$UTS_LEN\)\"}{UTS_VERSION=\"#1 SMP PREEMPT $BUILD_TIME\"}" ./common/scripts/mkcompile_h
 sed -i '$s|echo "\$res"|echo "\$res-$KERNEL_NAME"|' ./common/scripts/setlocalversion
 sed -i "/stable_scmversion_cmd/s/-maybe-dirty//g" ./build/kernel/kleaf/impl/stamp.bzl
 sed -i '/^CONFIG_LOCALVERSION=/ s/="\([^"]*\)"/="$KERNEL_NAME"/' ./common/arch/arm64/configs/gki_defconfig
