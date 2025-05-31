@@ -132,7 +132,7 @@ jobs:
       - name: Add kernel suffix
         run: |
          cd build_kernel
-         sed -i '$s|echo "\$res"|echo "\$res-${{ github.event.inputs.Kernel_Suffix }"|' ./common/scripts/setlocalversion
+         sed -i '$s|echo "\$res"|echo "\$res-${{ github.event.inputs.Kernel_Suffix }}"|' ./common/scripts/setlocalversion
          
       - name: Set kernel build time
         run: |
