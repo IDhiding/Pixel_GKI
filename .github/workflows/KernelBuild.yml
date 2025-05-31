@@ -5,7 +5,7 @@ on:
       Android_Version:
         description: "Android Version"
         required: true
-        default: 'android14'
+        default: '14'
       Kernel_Version:
        description: "Kernel Version"
        required: true
