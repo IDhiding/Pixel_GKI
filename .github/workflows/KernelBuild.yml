@@ -82,8 +82,7 @@ jobs:
       - name: Setup SUSFS
         run: |
            cd build_kernel
-           git clone https://gitlab.com/simonpunk/susfs4ksu.git -b gki-${{ github.event.inputs.Android_Version }}-${{ github.event.inputs.Kernel_Version }}
-           git clone https://github.com/SukiSU-Ultra/SukiSU_patch.git      
+           git clone https://gitlab.com/simonpunk/susfs4ksu.git -b gki-${{ github.event.inputs.Android_Version }}-${{ github.event.inputs.Kernel_Version }}     
            cp susfs4ksu/kernel_patches/50_add_susfs_in_gki-${{ github.event.inputs.Android_Version }}-${{ github.event.inputs.Kernel_Version }}.patch ./common/
            cp susfs4ksu/kernel_patches/fs/* ./common/fs/
            cp susfs4ksu/kernel_patches/include/linux/* ./common/include/linux/
