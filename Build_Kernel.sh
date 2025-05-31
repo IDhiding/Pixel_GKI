@@ -137,8 +137,8 @@ fi
 
 # Add kernel Suffix
 cd $HOME/Pixel_GKI/build_kernel || exit
-sed -i 's/res="\$res\$(cat "\$file")"/res="-android14-11-g9a32439e14e9-ab13050921"/g' ./common/scripts/setlocalversion
-sudo sed -i "s/-android14-11-g9a32439e14e9-ab13050921/$KERNEL_NAME/g" ./common/scripts/setlocalversion
+sed -i 's/res="\$res\$(cat "\$file")"/res="$KERNEL_NAME"/g' ./common/scripts/setlocalversion
+# sudo sed -i "s/-android14-11-g9a32439e14e9-ab13050921/$KERNEL_NAME/g" ./common/scripts/setlocalversion
 
 #Unix timestamp converter
 info "Set kernel build time"
