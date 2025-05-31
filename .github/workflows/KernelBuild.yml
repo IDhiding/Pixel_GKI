@@ -17,7 +17,7 @@ on:
       Kernel_Suffix:
         description: "Kernel Suffix"
         required: true
-        default: '-android14-11-g9a32439e14e9-ab13050921'
+        default: 'g9a32439e14e9-ab13050921'
       Kernel_Time:
        description: "Build Time"
        required: true
@@ -132,8 +132,7 @@ jobs:
       - name: Add kernel suffix
         run: |
          cd build_kernel
-         sed -i 's/res="\$res\$(cat "\$file")"/res="-android14-11-g9a32439e14e9-ab13050921"/g' ./common/scripts/setlocalversion
-         sudo sed -i 's/-android14-11-g9a32439e14e9-ab13050921/${{ github.event.inputs.Kernel_Suffix }}/g' ./common/scripts/setlocalversion
+         sed -i '$s|echo "\$res"|echo "\$res-${{ github.event.inputs.Kernel_Suffix }"|' ./common/scripts/setlocalversion
          
       - name: Set kernel build time
         run: |
