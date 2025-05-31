@@ -84,7 +84,6 @@ sed -i '/#include <trace\/hooks\/fs.h>/d' 50_add_susfs_in_gki-android$ANDROID_VE
 patch -p1 < 50_add_susfs_in_gki-android$ANDROID_VER-$KERNEL_VER.patch || true
 cp ../SukiSU_patch/hooks/syscall_hooks.patch ./
 patch -p1 -F 3 < syscall_hooks.patch
-info "Complete"
 
 #Add these configuration to kernel
 info "Add susfs configuration to kernel"
@@ -114,7 +113,6 @@ CONFIGS=(
 for CONFIG in "${CONFIGS[@]}"; do
   echo "$CONFIG" >> common/arch/arm64/configs/gki_defconfig
 done
-info "Complete"
 
 sudo sed -i 's/check_defconfig//' common/build.config.gki
 cd common
