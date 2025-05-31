@@ -6,14 +6,24 @@ info() {
 }
 
 # Setting
-# Kernel Suffix                   
+# Android Version
+export ANDROID_VER="14"
+# Kernel Version
+export KERNEL_VER="6.1"
+# Security Patch
+export SEC_PATCH="2025-05"
+# Kernel Suffix
 export KERNEL_NAME="-android14-11-g9a32439e14e9-ab13050921"
 # System Time
 export BUILD_TIME="2025-05-27 00:12:14 UTC"
 
-info "Press Ctrl+C to exit at anywhere"
+info "Modify the script before starting"
+info "Android Version：Android ${ANDROID_VER}"
+info "Kernel Version：${KERNEL_VER}"
+info "Security Patch：${SEC_PATCH}"
 info "Kernel Suffix：${KERNEL_NAME}"
 info "Build Time：${BUILD_TIME}"
+info "After startup, press Ctrl+C to exit"
 
 read -n 1 -s -p "Press any key to continue"
 echo
@@ -47,7 +57,7 @@ sudo mv $HOME/Pixel_GKI/repo /usr/local/bin/repo
 #Sync Generic Kernel Image Source Code
 info "Sync GKI source code"
 mkdir build_kernel && cd build_kernel
-repo init -u https://android.googlesource.com/kernel/manifest -b common-android14-6.1 --depth=1
+repo init -u https://android.googlesource.com/kernel/manifest -b common-android$ANDROID_VER-$KERNEL_VER-$SEC_PATCH --depth=1
 repo sync
 
 #Download SukiSU-Ultra
@@ -61,18 +71,17 @@ export KSU_VERSION=$KSU_VERSION
 sed -i "s/DKSU_VERSION=12800/DKSU_VERSION=${KSU_VERSION}/" kernel/Makefile
 
 #Download SUSFS
-info "Setup SUSFS"
+info "Setup SUSFS & SukiSU Patch"
 cd $HOME/Pixel_GKI/build_kernel
-git clone https://gitlab.com/simonpunk/susfs4ksu.git -b gki-android14-6.1
+git clone https://gitlab.com/simonpunk/susfs4ksu.git -b gki-android$ANDROID_VER-$KERNEL_VER
 git clone https://github.com/SukiSU-Ultra/SukiSU_patch.git
-cp susfs4ksu/kernel_patches/50_add_susfs_in_gki-android14-6.1.patch ./common/
+cp susfs4ksu/kernel_patches/50_add_susfs_in_gki-android$ANDROID_VER-$KERNEL_VER.patch ./common/
 cp susfs4ksu/kernel_patches/fs/* ./common/fs/
 cp susfs4ksu/kernel_patches/include/linux/* ./common/include/linux/
 cd common
-sed -i 's/-32,12 +32,38/-32,11 +32,37/g' 50_add_susfs_in_gki-android14-6.1.patch
-sed -i '/#include <trace\/hooks\/fs.h>/d' 50_add_susfs_in_gki-android14-6.1.patch
-
-patch -p1 < 50_add_susfs_in_gki-android14-6.1.patch || true
+sed -i 's/-32,12 +32,38/-32,11 +32,37/g' 50_add_susfs_in_gki-android$ANDROID_VER-$KERNEL_VER.patch
+sed -i '/#include <trace\/hooks\/fs.h>/d' 50_add_susfs_in_gki-android$ANDROID_VER-$KERNEL_VER.patch
+patch -p1 < 50_add_susfs_in_gki-android$ANDROID_VER-$KERNEL_VER.patch || true
 cp ../SukiSU_patch/hooks/syscall_hooks.patch ./
 patch -p1 -F 3 < syscall_hooks.patch
 info "Complete"
