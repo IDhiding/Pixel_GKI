@@ -13,7 +13,7 @@ export KERNEL_VER="6.1"
 # Security Patch
 export SEC_PATCH="2025-05"
 # Kernel Suffix
-export KERNEL_NAME="-android14-11-g9a32439e14e9-ab13050921"
+export KERNEL_NAME="g9a32439e14e9-ab13050921"
 # System Time
 export BUILD_TIME="2025-05-27 00:12:14 UTC"
 
@@ -136,6 +136,7 @@ fi
 # Add kernel Suffix
 cd $HOME/Pixel_GKI/build_kernel || exit
 sed -i '$s|echo "\$res"|echo "\$res-$KERNEL_NAME"|' ./common/scripts/setlocalversion
+sed -i "/stable_scmversion_cmd/s/-maybe-dirty//g" ./build/kernel/kleaf/impl/stamp.bzl
 # sudo sed -i "s/-android14-11-g9a32439e14e9-ab13050921/$KERNEL_NAME/g" ./common/scripts/setlocalversion
 info "Kernel name : $res-$KERNEL_NAME" 
 
