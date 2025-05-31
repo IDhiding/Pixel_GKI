@@ -74,6 +74,7 @@ info "Setup SUSFS & SukiSU patch"
 cd $HOME/Pixel_GKI/build_kernel
 git clone https://gitlab.com/simonpunk/susfs4ksu.git -b gki-${ANDROID_VERSION}-${KERNEL_VERSION}
 git clone https://github.com/SukiSU-Ultra/SukiSU_patch.git
+cd build_kernel
 cp susfs4ksu/kernel_patches/50_add_susfs_in_gki-${ANDROID_VERSION}-${KERNEL_VERSION} ./common/
 cp susfs4ksu/kernel_patches/fs/* ./common/fs/
 cp susfs4ksu/kernel_patches/include/linux/* ./common/include/linux/
