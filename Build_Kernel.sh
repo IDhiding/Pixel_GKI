@@ -41,7 +41,7 @@ done
 #Download Toolkit
 info "Install Toolkit"
 sudo apt update && sudo apt upgrade -y
-sudo apt-get install -y build-essential bc bison python3 curl git zip
+sudo apt-get install -y build-essential bc bison python3 curl git zip ftp gcc-aarch64-linux-gnu gcc-arm-linux-gnueabi libssl-dev lftp wget libfl-dev gcc bc zip make
 
 #Git for GKI
 git config --global user.name "hiding"
