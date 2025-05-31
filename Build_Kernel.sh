@@ -137,8 +137,8 @@ fi
 cd $HOME/Pixel_GKI/build_kernel || exit
 sed -i '$s|echo "\$res"|echo "\$res-$KERNEL_NAME"|' ./common/scripts/setlocalversion
 sed -i "/stable_scmversion_cmd/s/-maybe-dirty//g" ./build/kernel/kleaf/impl/stamp.bzl
+sed -i '/^CONFIG_LOCALVERSION=/ s/="\([^"]*\)"/="$KERNEL_NAME"/' ./common/arch/arm64/configs/gki_defconfig
 # sudo sed -i "s/-android14-11-g9a32439e14e9-ab13050921/$KERNEL_NAME/g" ./common/scripts/setlocalversion
-info "Kernel name : $res-$KERNEL_NAME" 
 
 #Unix timestamp converter
 info "Set kernel build time"
