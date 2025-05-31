@@ -1,0 +1,159 @@
+name: KernelBuild
+on:
+  workflow_dispatch:
+    inputs:
+      Kernel_Suffix:
+        description: "Kernel Suffix"
+        required: true
+        default: '-android14-11-g9a32439e14e9-ab13050921'
+      Kernel_Time:
+       description: "Build Time"
+       required: true
+       default: '2025-05-27 00:12:14 UTC'
+      Enable_KPM_Feature:
+       description: "Enable KPM Feature"
+       required: false
+       default: false
+       type: boolean
+
+
+jobs:
+  Detail:
+    runs-on: ubuntu-latest
+    env:
+      CCACHE_COMPILERCHECK: "%compiler% -dumpmachine; %compiler% -dumpversion"
+      CCACHE_NOHASHDIR: "true"
+      CCACHE_HARDLINK: "true"
+    steps:
+      - name: Maximize build space
+        uses: easimon/maximize-build-space@master
+        with:
+          root-reserve-mb: 8192
+          temp-reserve-mb: 2048
+          remove-dotnet: 'true'
+          remove-android: 'true'
+          remove-haskell: 'true'
+          remove-codeql: 'true'
+
+      - name: Install toolkit
+        run: |
+         sudo apt update && sudo apt upgrade -y
+         sudo apt-get install -y build-essential bc bison python3 curl git zip wget
+          
+      - name: Git for GKI
+        run: |
+         git config --global user.name "hiding"
+         git config --global user.email "hiding@hotmail.com"
+
+      - name: Install repo
+        run: |
+         curl https://storage.googleapis.com/git-repo-downloads/repo > ~/repo
+         chmod a+x ~/repo
+         sudo mv ~/repo /usr/local/bin/repo
+
+      - name: Sync GKI source code
+        run: |
+         mkdir build_kernel && cd build_kernel
+         repo init -u https://android.googlesource.com/kernel/manifest -b common-android14-6.1-2025-05 --depth=1
+         repo sync
+         
+      - name: Setup SukiSU-Ultra
+        run: |
+         cd build_kernel
+         curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/main/kernel/setup.sh" | bash -s susfs-dev
+         cd ./KernelSU
+         KSU_VERSION=$(expr $(/usr/bin/git rev-list --count main) "+" 10606)
+         echo "KSUVER=$KSU_VERSION" >> $GITHUB_ENV
+         export KSU_VERSION=$KSU_VERSION
+         sed -i "s/DKSU_VERSION=12800/DKSU_VERSION=${KSU_VERSION}/" kernel/Makefile
+        
+      - name: Setup SUSFS
+        run: |
+           cd build_kernel
+           git clone https://gitlab.com/simonpunk/susfs4ksu.git -b gki-android14-6.1
+           git clone https://github.com/SukiSU-Ultra/SukiSU_patch.git      
+           cp susfs4ksu/kernel_patches/50_add_susfs_in_gki-android14-6.1.patch ./common/
+           cp susfs4ksu/kernel_patches/fs/* ./common/fs/
+           cp susfs4ksu/kernel_patches/include/linux/* ./common/include/linux/
+           cd common
+           sed -i 's/-32,12 +32,38/-32,11 +32,37/g' 50_add_susfs_in_gki-android14-6.1.patch
+           sed -i '/#include <trace\/hooks\/fs.h>/d' 50_add_susfs_in_gki-android14-6.1.patch
+           patch -p1 < 50_add_susfs_in_gki-android14-6.1.patch || true
+           cp ../SukiSU_patch/hooks/syscall_hooks.patch ./
+           patch -p1 -F 3 < syscall_hooks.patch
+           echo "Complete"
+           
+      - name: Add susfs configuration to kernel
+        run: |
+          cd build_kernel
+          echo "CONFIG_KSU=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_KSU_SUSFS_SUS_SU=n" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_KSU_MANUAL_HOOK=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_KSU_SUSFS=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_KSU_SUSFS_HAS_MAGIC_MOUNT=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_KSU_SUSFS_SUS_PATH=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_KSU_SUSFS_SUS_MOUNT=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_KSU_SUSFS_AUTO_ADD_SUS_KSU_DEFAULT_MOUNT=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_KSU_SUSFS_AUTO_ADD_SUS_BIND_MOUNT=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_KSU_SUSFS_SUS_KSTAT=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_KSU_SUSFS_SUS_OVERLAYFS=n" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_KSU_SUSFS_TRY_UMOUNT=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_KSU_SUSFS_AUTO_ADD_TRY_UMOUNT_FOR_BIND_MOUNT=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_KSU_SUSFS_SPOOF_UNAME=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_KSU_SUSFS_ENABLE_LOG=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_KSU_SUSFS_OPEN_REDIRECT=y" >> ./common/arch/arm64/configs/gki_defconfig          
+          sudo sed -i 's/check_defconfig//' ./common/build.config.gki
+          cd common
+          git add -A && git commit -a -m "BUILD Kernel"
+      
+      - name: Add KPM configuration to kernel
+        if: ${{inputs.Enable_KPM_Feature }}
+        run: |
+          cd build_kernel
+          echo "CONFIG_KPM=y" >> ./common/arch/arm64/configs/gki_defconfig         
+          sudo sed -i 's/check_defconfig//' ./common/build.config.gki
+          cd common
+          git add -A && git commit -a -m "BUILD Kernel"
+          
+      - name: Add kernel suffix
+        run: |
+         cd build_kernel
+         sed -i 's/res="\$res\$(cat "\$file")"/res="-android14-11-g9a32439e14e9-ab13050921"/g' ./common/scripts/setlocalversion
+         sudo sed -i 's/-android14-11-g9a32439e14e9-ab13050921/${{ github.event.inputs.Kernel_Suffix }}/g' ./common/scripts/setlocalversion
+         
+      - name: Set kernel build time
+        run: |
+          export SOURCE_DATE_EPOCH=$(date -d "${{ github.event.inputs.Kernel_Time }}" +%s)
+          echo "SOURCE_DATE_EPOCH=$SOURCE_DATE_EPOCH" >> $GITHUB_ENV
+          
+      - name: Build kernel
+        run: |
+           cd build_kernel
+           export SOURCE_DATE_EPOCH=${SOURCE_DATE_EPOCH}
+           sed -i '/^[[:space:]]*"protected_exports_list"[[:space:]]*:[[:space:]]*"android\/abi_gki_protected_exports_aarch64",$/d' ./common/BUILD.bazel
+           rm -rf ./common/android/abi_gki_protected_exports_*
+           tools/bazel run --config=fast --config=stamp --lto=thin //common:kernel_aarch64_dist -- --dist_dir=dist
+
+      - name: Add KPM patch
+        if: ${{inputs.Enable_KPM_Feature }}
+        run: |
+            echo "Patching Image file..."
+            cd build_kernel/dist
+            curl -LSs "https://raw.githubusercontent.com/ShirkNeko/SukiSU_patch/refs/heads/main/kpm/patch_linux" -o patch
+            chmod 777 patch
+            ./patch
+            mv oImage Image
+
+      - name: Output kernel
+        run: |
+            cd build_kernel/dist
+            mv Image kernel
+         
+         
+      - name: Upload kernel
+        uses: actions/upload-artifact@v4
+        with:
+         name: kernel
+         path: build_kernel/dist/kernel
